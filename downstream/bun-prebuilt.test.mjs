@@ -22,6 +22,8 @@ await test("writes validated v1 output for a Worker with assets and preserves ex
       const expression = kind === "function" ? "ctx => ctx.mode === 'preview' ? " + worker + " : {}" : worker;
       await writeFile(configFile, "export default " + expression + ";");
       const input = { configFile, bundle, assets, output, mode: "preview" };
+      await assert.rejects(() => preparePrebuilt({ ...input, bundle: join(root, "missing") }), { code: "ENOENT" });
+      await assert.rejects(() => access(output), { code: "ENOENT" });
       assert.equal(await preparePrebuilt(input), output);
       const configPath = join(output, ".cloudflare/output/v1/config.json");
       const before = await readFile(configPath, "utf8");

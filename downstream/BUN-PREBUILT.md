@@ -15,7 +15,7 @@ Build Output reader. An explicit config path supports spaces on Windows.
 
 The native loader still rejects Bun. This helper covers an explicit config,
 a single Worker and local assets. Callers own bundling, source discovery,
-deployment and recovery if a later filesystem operation fails. The
+and deployment. A write failure removes the directory acquired by that call so the same output path can be retried. The
 [upstream loader discussion](https://github.com/cloudflare/cf/issues/252)
 records the support decision. The [older helper](https://github.com/iki/cf/commit/b6c20a32e18f618adbbb05e3a3d300896bfd2a83)
 targets the v0 output layout.

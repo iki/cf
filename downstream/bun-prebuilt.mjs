@@ -1,4 +1,4 @@
-import { cp, mkdir } from "node:fs/promises";
+import { cp, mkdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveAndParseConfig } from "@cloudflare/config";
@@ -16,12 +16,17 @@ export async function preparePrebuilt({ configFile, bundle, assets, output, modu
 
   const root = resolve(output);
   await mkdir(root);
-  const target = getWorkerBundleDir(root);
-  await mkdir(target, { recursive: true });
-  await cp(resolve(bundle), target, { recursive: true });
-  await writeAssets({ root, sourceDirectory: resolve(assets) });
-  await writeRootConfig({ root, settings, buildContext });
-  await writeWorkerConfig({ root, config: worker, manifest: { type: "partial", mainModule: "worker.js", modules } });
-  await readBuildOutput(root);
-  return root;
+  try {
+    const target = getWorkerBundleDir(root);
+    await mkdir(target, { recursive: true });
+    await cp(resolve(bundle), target, { recursive: true });
+    await writeAssets({ root, sourceDirectory: resolve(assets) });
+    await writeRootConfig({ root, settings, buildContext });
+    await writeWorkerConfig({ root, config: worker, manifest: { type: "partial", mainModule: "worker.js", modules } });
+    await readBuildOutput(root);
+    return root;
+  } catch (error) {
+    await rm(root, { recursive: true, force: true });
+    throw error;
+  }
 }
